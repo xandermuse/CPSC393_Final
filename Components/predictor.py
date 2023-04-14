@@ -145,42 +145,45 @@ class LSTMPredictor(BasePredictor):
         ]
 
     def optimize_model(self, train_data, test_data=None):
-        results_list = []
 
         @use_named_args(self.search_space)
         def evaluate_model(**params):
             model = self.model_class(**params)
-            mse = model.train_and_evaluate(train_data, test_data)
-            results_list.append((params, mse))
+            X_train, y_train = train_data
+            X_test, y_test = test_data
+
+            model.train(X_train, y_train, epochs=1, batch_size=32, validation_split=0.2, patience=5)
+            mse = model.evaluate(X_test, y_test)
             return mse
 
         result = gp_minimize(evaluate_model, self.search_space, n_calls=10, random_state=0, verbose=True, n_jobs=-1)
-
-        # Sort the results list by MSE
-        results_list.sort(key=lambda x: x[1])
-
-        # Print the best parameters
-        print("Best hyperparameters found: ", results_list[0][0])
-
-        return result
-    
+        
+        best_hyperparameters = result.x
+        return best_hyperparameters
 
 
 def save_best_params(best_hyperparameters, filename):
     with open(filename, 'wb') as outfile:
-        pickle.dump(best_hyperparameters, outfile)
+        for params in best_hyperparameters:
+            print(params)
+            pickle.dump(params, outfile)
+            
+
 
 def load_best_params(filename):
     with open(filename, 'rb') as infile:
-        best_hyperparameters = pickle.load(infile)
-    return best_hyperparameters
+        best_hyperparameters_list = pickle.load(infile)
+    
+    # Find the best hyperparameters with the lowest MSE
+    best_hyperparameters = min(best_hyperparameters_list, key=lambda x: x[1])
+    return best_hyperparameters[0]
 
 
-# if __name__ == '__main__':
-#     tickers = 'AAPL'
-#     start = '2010-01-01'
-#     end = '2020-01-01'
-#     n_splits = 2
+if __name__ == '__main__':
+    tickers = 'AAPL'
+    start = '2010-01-01'
+    end = '2020-01-01'
+    n_splits = 2
 
-#     lstm_predictor = LSTMPredictor(tickers, start, end)
-#     lstm_predictor.train_and_evaluate(n_splits=n_splits)
+    lstm_predictor = LSTMPredictor(tickers, start, end)
+    lstm_predictor.train_and_evaluate(n_splits=n_splits)

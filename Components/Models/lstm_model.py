@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
-
+from sklearn.metrics import mean_squared_error
 
 
 class LSTMModel:
@@ -20,9 +20,15 @@ class LSTMModel:
 
     def train(self, X_train, y_train, epochs=10, batch_size=32, validation_split=0.2, patience=5):
         early_stopping = EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True)
-        self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=validation_split, callbacks=[early_stopping])
-
+        self.model.fit(X_train, y_train, epochs=epochs,
+                       batch_size=batch_size, validation_split=validation_split,
+                       callbacks=[early_stopping], shuffle=False)
 
     def predict(self, data):
         predictions = self.model.predict(data)
         return predictions.flatten()
+
+    def evaluate(self, X_test, y_test):
+        predictions = self.predict(X_test)
+        mse = mean_squared_error(y_test, predictions)
+        return mse

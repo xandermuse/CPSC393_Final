@@ -14,7 +14,7 @@ class GRUModel:
         self.model.add(Dense(1))
         self.model.compile(optimizer=optimizer, loss='mean_squared_error')
 
-    def train(self, X_train, y_train, epochs=10, batch_size=32, validation_split=0.2, patience=5):
+    def train(self, X_train, y_train, epochs=1, batch_size=32, validation_split=0.2, patience=5):
         early_stopping = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True)
         self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=validation_split, callbacks=[early_stopping])
 

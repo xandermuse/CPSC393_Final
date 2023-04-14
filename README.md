@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ## CPSC393 Final Project
 
 A comprehensive stock market prediction system utilizing an ensemble of machine learning techniques, including LSTM, GRU, and ARIMA models. Designed to analyze and predict stock prices, this project showcases a comparative study of different algorithms and their effectiveness in predicting financial market trends, while leveraging the power of ensemble methods for improved accuracy and robustness
@@ -196,3 +197,7 @@ gantt
     Implement Ensemble Model          :         em1, after mf1, 5d
 
 ```
+=======
+# CPSC393_Final
+CPSC393 Final Project: Stock market prediction system using an ensemble of LSTM, GRU, and ARIMA models. The project compares these algorithms' effectiveness and leverages ensemble methods for improved accuracy
+>>>>>>> bf6f53efa8b6616c380ed39a39f9ce23acb4e057

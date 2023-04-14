@@ -1,8 +1,6 @@
 import yfinance as yf
 import pandas as pd
 
-
-
 class DataCollector:
     def get_data(self, tickers, start, end):
         data = pd.DataFrame()

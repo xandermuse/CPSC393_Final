@@ -7,7 +7,8 @@ from tensorflow.keras.callbacks import EarlyStopping
 
 
 class LSTMModel:
-    def __init__(self, input_shape=(60, 7), units=50, dropout_rate=0.2, optimizer='adam'):
+    def __init__(self, units=50, dropout_rate=0.2, optimizer='adam'):
+        input_shape = (60, 6)  # Set the input_shape manually
         self.model = Sequential()
         self.model.add(LSTM(units, return_sequences=True, input_shape=input_shape))
         self.model.add(Dropout(dropout_rate))

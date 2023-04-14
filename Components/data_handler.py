@@ -7,13 +7,18 @@ class DataHandler:
     def __init__(self, data_collector):
         self.data_collector = data_collector
 
-    def create_sequences(self, data, window):
-        X, y = [], []
-        data = self.normalize_data(data)  # Normalize the data
-        for i in range(len(data) - window):
-            X.append(data[i : (i + window)].values)
-            y.append(data.iloc[i + window, 1])  # Assuming 'Close' price is in the second column
-        return np.array(X), np.array(y)
+    def create_sequences(self, data, seq_length):
+        num_features = data.shape[1]
+        temp = data.copy()
+
+        sequences = np.zeros((len(temp) - seq_length, seq_length, num_features))
+        targets = np.zeros(len(temp) - seq_length)
+
+        for i in range(len(temp) - seq_length):
+            sequences[i] = temp.iloc[i:i + seq_length].values
+            targets[i] = temp.iloc[i + seq_length]['Close']
+
+        return sequences, targets
     
     def normalize_data(self, data):
         scaler = MinMaxScaler(feature_range=(0, 1))

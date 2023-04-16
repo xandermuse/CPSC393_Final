@@ -34,8 +34,10 @@ cd CPSC393_Final
 ##  Running the project
   
   
-The Jupyter notebook 'USAGE.ipynb' contains all the nessesary code to use the project to train and evaluate the models.
+The Jupyter notebook 'Testing.ipynb' contains all the nessesary code to use the project to train and evaluate the models.
   
+##  
+
 ##  Class Diagram
   
 Originally, we had a class diagram that looked like this:

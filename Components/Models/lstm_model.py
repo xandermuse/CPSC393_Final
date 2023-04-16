@@ -15,9 +15,9 @@ class LSTMModel:
         self.model.add(LSTM(units, return_sequences=True))
         self.model.add(Dropout(dropout_rate))
         self.model.add(LSTM(units))
-        self.model.add(Dense(1))
+        self.model.add(Dense(6, activation='linear'))
         self.model.compile(optimizer=optimizer, loss='mean_squared_error')
-
+    
     def train(self, X_train, y_train, epochs=10, batch_size=32, validation_split=0.2, patience=5):
         early_stopping = EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True)
         self.model.fit(X_train, y_train, epochs=epochs,
@@ -29,6 +29,7 @@ class LSTMModel:
         return predictions.flatten()
 
     def evaluate(self, X_test, y_test):
-        predictions = self.predict(X_test)
+        predictions = self.model.predict(X_test)
         mse = mean_squared_error(y_test, predictions)
         return mse
+

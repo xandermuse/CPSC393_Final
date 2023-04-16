@@ -8,12 +8,14 @@ from .Models.arima_model import ARIMAModel
 from .data_handler import DataHandler
 from .stock_visualizer import StockVisualizer
 from skopt import gp_minimize
-from skopt.space import Real, Integer, Categorical
 from skopt.utils import use_named_args
+import skopt.space
+from functools import partial
+
 
 from sklearn.metrics import mean_squared_error
 from skopt.space import Integer, Real, Categorical
-import pickle
+import dill
 
 
 
@@ -50,8 +52,9 @@ class BasePredictor:
 
         for train_index, test_index in tscv.split(self.data):
             train_data, test_data = self.data.iloc[train_index], self.data.iloc[test_index]
-            X_train, y_train = self.data_handler.create_sequences(train_data, 60)
-            X_test, y_test = self.data_handler.create_sequences(test_data, 60)
+            X_train, y_train = self.data_handler.create_sequences(train_data[:-60], 60)
+            X_test, y_test = self.data_handler.create_sequences(test_data[:-60], 60)
+
 
             if isinstance(self, ARIMAPredictor):
                 best_params = self.optimize_model((X_train, y_train))
@@ -65,31 +68,27 @@ class BasePredictor:
 
 
 
-
-    
-
 class ARIMAPredictor(BasePredictor):
-    def __init__(self, tickers, start, end):
+    def __init__(self, tickers, start, end): 
         super().__init__(ARIMAModel, tickers, start, end)
         self.search_space = [
-            Integer(0, 5, name='p'),
-            Integer(0, 5, name='q')
+            Integer(0, 5, name="p"),
+            Integer(0, 2, name="d"),
+            Integer(0, 5, name="q"),
         ]
 
     def optimize_model(self, train_data):
         results_list = []
 
         @use_named_args(self.search_space)
-        def evaluate_model(p, q):
-            order = (p, 1, q)
-            arima_model = ARIMAModel(order=order)
-            arima_model.train(train_data)
+        def partial_evaluate_model(p, d, q):
+            p, d, q = int(p), int(d), int(q)
+            arima = ARIMAModel(p=p, d=d, q=q)
+            arima.train(train_data)
+            predictions = arima.predict(train_data)
+            return mean_squared_error(train_data, predictions)
 
-            mse = arima_model.model.mse
-            results_list.append((order, mse))
-            return mse
-
-        result = gp_minimize(lambda x: evaluate_model(dict(zip([dim.name for dim in self.search_space], x))), self.search_space, n_calls=10, random_state=0, verbose=True, n_jobs=-1)
+        result = gp_minimize(partial_evaluate_model, self.search_space, n_calls=10, random_state=0, verbose=True, n_jobs=-1)
 
         # Sort the results list by MSE
         results_list.sort(key=lambda x: x[1])
@@ -98,6 +97,18 @@ class ARIMAPredictor(BasePredictor):
         print("Best hyperparameters found: ", results_list[0][0])
 
         return result
+
+
+def evaluate_model(model_class, train_data, test_data, **params):
+    model = model_class(**params)
+    X_train, y_train = train_data
+    X_test, y_test = test_data
+
+    model.train(X_train, y_train, epochs=10, batch_size=32, validation_split=0.2, patience=5)
+    mse = model.evaluate(X_test, y_test)
+    
+    return mse
+
 
 class GRUPredictor(BasePredictor):
     def __init__(self, tickers, start, end):
@@ -108,32 +119,15 @@ class GRUPredictor(BasePredictor):
             Categorical(['adam', 'rmsprop'], name='optimizer')
         ]
 
-    def optimize_model(self, train_data, test_data):
+    def optimize_model(self, train_data, test_data=None):
         results_list = []
 
-        @use_named_args(self.search_space)  # Replace search_space with self.search_space
-        def evaluate_model(**params):
-            gru_model = GRUModel(input_shape=(60, 6), **params)
+        named_evaluate_model = use_named_args(self.search_space)(lambda **params: evaluate_model(self.model_class, train_data, test_data, **params))
 
-            X_train, y_train = train_data
-            X_test, y_test = test_data
-
-            gru_model.train(X_train, y_train, epochs=10, batch_size=32, validation_split=0.2, patience=5)
-
-            predictions = gru_model.predict(X_test)
-            mse = np.mean((predictions - y_test) ** 2)
-            results_list.append((params, mse))
-            return mse
-
-        result = gp_minimize(evaluate_model, self.search_space, n_calls=10, random_state=0, verbose=True, n_jobs=-1)
-
-        # Sort the results list by MSE
-        results_list.sort(key=lambda x: x[1])
-
-        # Print the best parameters
-        print("Best hyperparameters found: ", results_list[0][0])
-
-        return result
+        result = gp_minimize(named_evaluate_model, self.search_space, n_calls=10, random_state=0, verbose=True, n_jobs=-1)
+        results_list.append(result)
+        
+        return results_list
 
 class LSTMPredictor(BasePredictor):
     def __init__(self, tickers, start, end):
@@ -145,19 +139,21 @@ class LSTMPredictor(BasePredictor):
         ]
 
     def optimize_model(self, train_data, test_data=None):
-
         @use_named_args(self.search_space)
         def evaluate_model(**params):
             model = self.model_class(**params)
             X_train, y_train = train_data
             X_test, y_test = test_data
 
+            print("X_train shape:", X_train.shape)
+            print("y_train shape:", y_train.shape)
+
             model.train(X_train, y_train, epochs=1, batch_size=32, validation_split=0.2, patience=5)
             mse = model.evaluate(X_test, y_test)
             return mse
 
         result = gp_minimize(evaluate_model, self.search_space, n_calls=10, random_state=0, verbose=True, n_jobs=-1)
-        
+
         best_hyperparameters = result.x
         return best_hyperparameters
 
@@ -166,24 +162,24 @@ def save_best_params(best_hyperparameters, filename):
     with open(filename, 'wb') as outfile:
         for params in best_hyperparameters:
             print(params)
-            pickle.dump(params, outfile)
-            
-
+            dill.dump(params, outfile)
 
 def load_best_params(filename):
     with open(filename, 'rb') as infile:
-        best_hyperparameters_list = pickle.load(infile)
-    
+        best_hyperparameters_list = dill.load(infile)
+
     # Find the best hyperparameters with the lowest MSE
     best_hyperparameters = min(best_hyperparameters_list, key=lambda x: x[1])
     return best_hyperparameters[0]
 
 
-if __name__ == '__main__':
-    tickers = 'AAPL'
-    start = '2010-01-01'
-    end = '2020-01-01'
-    n_splits = 2
 
-    lstm_predictor = LSTMPredictor(tickers, start, end)
-    lstm_predictor.train_and_evaluate(n_splits=n_splits)
+# if __name__ == '__main__':
+#     tickers = 'AAPL'
+#     start = '2010-01-01'
+#     end = '2020-01-01'
+#     n_splits = 2
+
+# print("Training ARIMA model...")
+# arima_predictor = ARIMAPredictor(tickers=tickers, start=start, end=end)
+# arima_predictor.train_and_evaluate(n_splits=n_splits)

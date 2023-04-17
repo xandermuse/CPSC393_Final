@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>ReadMe.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h2 id="cpsc393-final-project">CPSC393 Final Project</h2>
+<p>A comprehensive stock market prediction system utilizing an ensemble of machine learning techniques, including LSTM, GRU, and ARIMA models. Designed to analyze and predict stock prices, this project showcases a comparative study of different algorithms and their effectiveness in predicting financial market trends, while leveraging the power of ensemble methods for improved accuracy and robustness</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Python 3.8+
+Pandas
+NumPy
+Scikit-learn
+Scikit-optimize
+TensorFlow
+Keras
+Statsmodels
+Matplotlib
+Docker</p>
+<h2 id="building-the-docker-image">Building the Docker Image</h2>
+<p>To build the Docker image, navigate to the project directory and run the following command:</p>
+<pre class="hljs"><code><div>docker build -t cpsc393_stock_pred .
+</div></code></pre>
+<h3 id="running-the-docker-container">Running the Docker Container</h3>
+<p>After building the Docker image, you can run the project using the following command:</p>
+<pre class="hljs"><code><div>docker run -it --rm -p 8000:8000 cpsc393_stock_pred
+</div></code></pre>
+<p>Or you can run through the Docker Desktop.</p>
+<h2 id="installing">Installing</h2>
+<h3 id="clone-the-repository">Clone the repository</h3>
+<pre class="hljs"><code><div>git <span class="hljs-built_in">clone</span> https://github.com/xandermuse/CPSC393_Final.git
+</div></code></pre>
+<p>change directory to the project folder</p>
+<pre class="hljs"><code><div><span class="hljs-built_in">cd</span> CPSC393_Final
+</div></code></pre>
+<h2 id="running-the-project">Running the project</h2>
+<p>The Jupyter notebook 'Testing.ipynb' contains all the nessesary code to use the project to train and evaluate the models. You may have change import statements to use the project locally.</p>
+<h2 id="class-diagram">Class Diagram</h2>
+<p>Originally, we had a class diagram that looked like this:</p>
+<pre><code class="language-mermaid"><div class="mermaid">classDiagram
+    class DataCollector {
+        +collectData(tickers: List[str], start: str, end: str): DataFrame
+        +preprocessData(data: DataFrame): DataFrame
+    }
+    class ModelFactory {
+        +createModel(modelType: String): Model
+    }
+
+    class Model {
+        +build_model()
+        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
+        +predict(X_test)
+    }
+    class LSTMModel {
+        +build_model()
+        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
+        +predict(X_test)
+    }
+    class GRUModel {
+        +build_model()
+        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
+        +predict(X_test)
+    }
+    class TransformerModel {
+        +build_model()
+        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
+        +predict(X_test)
+    }
+    class ARIMAModel {
+        +build_model()
+        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
+        +predict(X_test)
+    }
+    class ProphetModel {
+        +build_model()
+        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
+        +predict(X_test)
+    }
+
+    class EnsembleModel {
+        +addModel(model: Model, weight: float): void
+        +predict(input: DataFrame): DataFrame
+    }
+    DataCollector --> Model
+    ModelFactory --> Model
+    EnsembleModel --> Model
+    Model --|> LSTMModel : Inheritance
+    Model --|> GRUModel : Inheritance
+    Model --|> TransformerModel : Inheritance
+    Model --|> ARIMAModel : Inheritance
+    Model --|> ProphetModel : Inheritance
+</div></code></pre>
+<h3 id="current-class-diagram">current class diagram</h3>
+<p>This is the current functionality of the project, which is a bit different from the original design. We still need to add the Transformer and Prophet models, as well as the Ensemble model.</p>
+<pre><code class="language-mermaid"><div class="mermaid">classDiagram
+    class DataCollector {
+        +get_data(tickers: List[str], start: str, end: str): DataFrame
+    }
+    class DataHandler {
+        +time_series_split(data: DataFrame, n_splits: int): TimeSeriesSplit
+        +create_sequences(data: DataFrame, sequence_length: int): Tuple[np.array, np.array]
+    }
+    class BasePredictor {
+        +download_data(): void
+        +time_series_split(n_splits: int): TimeSeriesSplit
+        +train_and_evaluate(n_splits: int): void
+    }
+    class LSTMPredictor {
+        +optimize_model(train_data: Tuple[np.array, np.array], test_data: Tuple[np.array, np.array]): OptimizeResult
+    }
+    class GRUPredictor {
+        +optimize_model(train_data: Tuple[np.array, np.array], test_data: Tuple[np.array, np.array]): OptimizeResult
+    }
+    class ARIMAPredictor {
+        +optimize_model(train_data: Tuple[np.array, np.array]): OptimizeResult
+    }
+    class Model {
+        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
+        +predict(X_test)
+    }
+    class LSTMModel {
+    }
+    class GRUModel {
+    }
+    class ARIMAModel {
+    }
+    class StockVisualizer {
+        +visualize_predictions()
+    }
+    DataCollector --> DataHandler
+    DataHandler --> BasePredictor
+    BasePredictor --|> LSTMPredictor : Inheritance
+    BasePredictor --|> GRUPredictor : Inheritance
+    BasePredictor --|> ARIMAPredictor : Inheritance
+    Model --|> LSTMModel : Inheritance
+    Model --|> GRUModel : Inheritance
+    Model --|> ARIMAModel : Inheritance
+    Model --|> TransformerModel : Inheritance
+    Model --|> ProphetModel : Inheritance
+</div></code></pre>
+<h3 id="heres-a-high-level-description-of-how-the-current-code-works">Here's a high-level description of how the current code works:</h3>
+<ol>
+<li>
+<p><strong>Data Collection</strong>: The <strong>'DataCollector'</strong> class in the <strong>'data_collector.py'</strong> module is responsible for downloading stock data from online sources (e.g., Yahoo Finance) based on the provided tickers, start, and end dates. This data is then stored in a Pandas DataFrame.</p>
+</li>
+<li>
+<p><strong>Data Processing</strong>: The <strong>'DataHandler'</strong> class in the <strong>'data_handler.py'</strong> module processes and prepares the data for use in the models. This includes creating sequences of data for time series modeling, splitting the data into train and test sets using time series cross-validation, and scaling the data when necessary.</p>
+</li>
+<li>
+<p><strong>Model Creation</strong>: The <strong>'BasePredictor'</strong> class in the <strong>'predictor.py'</strong> module serves as a base class for the specific predictor classes for LSTM, GRU, and ARIMA models (i.e., LSTMPredictor, GRUPredictor, and ARIMAPredictor). These predictor classes use a factory design pattern to create instances of the corresponding models, which are implemented in the Models directory.</p>
+</li>
+<li>
+<p><strong>Hyperparameter Optimization</strong>: Each predictor class defines a search space for hyperparameter optimization using Scikit-optimize's <strong>'gp_minimize'</strong> function. This function searches for the best hyperparameters for each model by minimizing the mean squared error (MSE) on the validation set.</p>
+</li>
+<li>
+<p><strong>Model Training and Evaluation</strong>: After finding the best hyperparameters for each model, the models are trained on the entire training set, and their performance is evaluated on the test set. The <strong>'train_and_evaluate'</strong> method of each predictor class handles this process.</p>
+</li>
+<li>
+<p><strong>Visualization</strong>: The <strong>'StockVisualizer'</strong> class in the <strong>'stock_visualizer.py'</strong> module provides visualization tools for comparing the predictions of the models with the actual data. This helps in understanding the accuracy and effectiveness of the models.</p>
+</li>
+</ol>
+<p>Functionality for the Transformer and Prophet models will be added in the future. The <strong>'EnsembleModel'</strong> class will be used to combine the predictions of the different models into a single prediction. This will be done by taking a weighted average of the predictions of the individual models, where the weights are determined by the performance of each model on the test set.</p>
+<p>The use of a factory design pattern allows for easy addition and modification of different model types in the project. By extending the BasePredictor class and implementing the necessary methods, new models can be added to the project with minimal changes to the existing codebase. This design pattern helps maintain the modularity and flexibility of the project.</p>
+<h2 id="timeline">TimeLine</h2>
+<p>We will be finished with the project by May 1st.</p>
+<p>The following is a timeline of the project.
+Gray boxes are completed tasks, Glowing Blue boxes are tasks in progress, and Blue boxes are tasks that are yet to be completed.</p>
+<pre><code class="language-mermaid"><div class="mermaid">gantt
+    title Final Project Timeline
+    dateFormat  YYYY-MM-DD
+
+    section Data Collection and Preprocessing
+    Collect and preprocess data       :done,    dc1, 2023-04-12, 1d
+
+    section LSTM Model
+    Implement LSTM Model              :done,    lstm1, after dc1, 2d
+
+    section GRU Model
+    Implement GRU Model               :active,  gru1, after lstm1, 2d
+
+    section Transformer Model
+    Implement Transformer Model       :         trans1, after gru1, 3d
+
+    section ARIMA Model
+    Implement ARIMA Model             :         arima1, after trans1, 3d
+
+    section Prophet Model
+    Implement Prophet Model           :         prophet1, after arima1, 2d
+
+    section Model Factory
+    Implement Model Factory           :         mf1, after prophet1, 1d
+
+    section Ensemble Model
+    Implement Ensemble Model          :         em1, after mf1, 5d
+
+</div></code></pre>
+
+</body>
+</html>

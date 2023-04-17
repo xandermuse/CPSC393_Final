@@ -1,22 +1,18 @@
-import datetime as dt
-import numpy as np
 import pandas as pd
-from .data_collector import DataCollector
-from .Models.lstm_model import LSTMModel
-from .Models.gru_model import GRUModel
-from .Models.arima_model import ARIMAModel
-from .data_handler import DataHandler
-from .stock_visualizer import StockVisualizer
 from skopt import gp_minimize
 from skopt.utils import use_named_args
 import skopt.space
 from functools import partial
-
-
 from sklearn.metrics import mean_squared_error
 from skopt.space import Integer, Real, Categorical
 import dill
 
+from .data_collector import DataCollector
+from .Models.lstm_model import LSTMModel
+from .Models.gru_model import GRUModel
+from .Models.arima_model import ARIMAModel
+from .Models.transformer_model import TransformerModel
+from .data_handler import DataHandler
 
 
 class BasePredictor:
@@ -65,6 +61,19 @@ class BasePredictor:
 
         save_best_params(best_hyperparameters, f'{self.model_class.__name__}_best_hyperparameters.pickle')
         return best_hyperparameters
+
+class TransformerPredictor(BasePredictor):
+    def __init__(self, tickers, start, end):
+        super().__init__(TransformerModel, tickers, start, end)
+        # Define the search space for hyperparameters
+        self.search_space = [
+            # Add hyperparameters here
+        ]
+
+
+    def optimize_model(self, train_data, test_data=None):
+        # Optimize the Transformer model using the search space
+        pass
 
 
 
@@ -180,6 +189,6 @@ def load_best_params(filename):
 #     end = '2020-01-01'
 #     n_splits = 2
 
-# print("Training ARIMA model...")
-# arima_predictor = ARIMAPredictor(tickers=tickers, start=start, end=end)
-# arima_predictor.train_and_evaluate(n_splits=n_splits)
+# print("Training Transformer model...")
+# transformer_predictor = TransformerPredictor(tickers=tickers, start=start, end=end)
+# transformer_predictor.train_and_evaluate(n_splits=n_splits)

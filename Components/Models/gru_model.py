@@ -18,7 +18,9 @@ class GRUModel:
 
     def train(self, X_train, y_train, epochs=1, batch_size=32, validation_split=0.2, patience=5):
         early_stopping = EarlyStopping(monitor='val_loss', patience=patience)
-        self.model.fit(X_train, y_train, epochs=epochs, batch_size=batch_size, validation_split=validation_split, callbacks=[early_stopping])
+        self.model.fit(X_train, y_train, epochs=epochs,
+                        batch_size=batch_size, validation_split=validation_split,
+                        callbacks=[early_stopping], shuffle=False)
 
     def predict(self, X_test):
         return self.model.predict(X_test)

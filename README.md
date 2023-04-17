@@ -15,6 +15,25 @@ TensorFlow
 Keras
 Statsmodels
 Matplotlib
+Docker
+
+## Building the Docker Image
+
+To build the Docker image, navigate to the project directory and run the following command:
+
+```bash
+docker build -t cpsc393_stock_pred .
+```
+
+### Running the Docker Container
+
+After building the Docker image, you can run the project using the following command:
+    
+```bash
+docker run -it --rm -p 8000:8000 cpsc393_stock_pred
+```
+
+Or you can run through the Docker Desktop.
 
 ## Installing
 
@@ -30,7 +49,7 @@ cd CPSC393_Final
 
 ## Running the project
 
-The Jupyter notebook 'USAGE.ipynb' contains all the nessesary code to use the project to train and evaluate the models.
+The Jupyter notebook 'Testing.ipynb' contains all the nessesary code to use the project to train and evaluate the models. You may have change import statements to use the project locally.
 
 ## Class Diagram
 Originally, we had a class diagram that looked like this:
@@ -137,7 +156,10 @@ classDiagram
     Model --|> LSTMModel : Inheritance
     Model --|> GRUModel : Inheritance
     Model --|> ARIMAModel : Inheritance
+    Model --|> TransformerModel : Inheritance
+    Model --|> ProphetModel : Inheritance
 ```
+
 
 ### Here's a high-level description of how the current code works:
 

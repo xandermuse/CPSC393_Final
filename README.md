@@ -230,3 +230,14 @@ gantt
 
 ```
 
+### Legal
+
+Disclaimer: Student Project, Not Intended for Actual Use
+
+This software is a student project developed for educational purposes only. It is not intended to be used for any commercial or professional purpose, including but not limited to trading, investment, or financial decision-making.
+
+The creators of this software, including AM, HF, JM, and TG, as well as their affiliated educational institution, make no representations or warranties, express or implied, regarding the accuracy, reliability, or completeness of the information or predictions provided by this software.
+
+By using this software, you acknowledge that the creators and their affiliated educational institution shall not be held liable for any errors, omissions, or inaccuracies in the information provided, nor any direct, indirect, incidental, consequential, special, or exemplary damages resulting from your reliance on or use of this software.
+
+You also acknowledge that this software should not be used as a substitute for professional financial advice, and any investment or financial decisions should be made after consulting with a qualified financial professional.

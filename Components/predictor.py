@@ -7,12 +7,12 @@ from sklearn.metrics import mean_squared_error
 from skopt.space import Integer, Real, Categorical
 import dill
 
-from .data_collector import DataCollector
+from .Data.data_collector import DataCollector
 from .Models.lstm_model import LSTMModel
 from .Models.gru_model import GRUModel
 from .Models.arima_model import ARIMAModel
 from .Models.transformer_model import TransformerModel
-from .data_handler import DataHandler
+from .Data.data_handler import DataHandler
 
 
 class BasePredictor:
@@ -51,16 +51,17 @@ class BasePredictor:
             X_train, y_train = self.data_handler.create_sequences(train_data[:-60], 60)
             X_test, y_test = self.data_handler.create_sequences(test_data[:-60], 60)
 
-
             if isinstance(self, ARIMAPredictor):
                 best_params = self.optimize_model((X_train, y_train))
             else:
                 best_params = self.optimize_model((X_train, y_train), (X_test, y_test))
 
-            best_hyperparameters.append(best_params)
+            # Updated this line to append the parameters from the best_params variable
+            best_hyperparameters.extend(best_params)
 
         save_best_params(best_hyperparameters, f'{self.model_class.__name__}_best_hyperparameters.pickle')
         return best_hyperparameters
+
 
 class TransformerPredictor(BasePredictor):
     def __init__(self, tickers, start, end):
@@ -85,6 +86,19 @@ class ARIMAPredictor(BasePredictor):
             Integer(0, 2, name="d"),
             Integer(0, 5, name="q"),
         ]
+        self.models = {feature: ARIMAModel() for feature in ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']}
+
+    def train_all_models(self, train_data):
+        for feature in self.models:
+            print(f"Training ARIMA model for {feature}...")
+            self.models[feature].train(train_data, feature)
+
+    def predict_all_models(self, steps):
+        predictions = {}
+        for feature in self.models:
+            print(f"Predicting {feature} with ARIMA model...")
+            predictions[feature] = self.models[feature].predict(steps)
+        return predictions
 
     def optimize_model(self, train_data):
         results_list = []
@@ -113,7 +127,7 @@ def evaluate_model(model_class, train_data, test_data, **params):
     X_train, y_train = train_data
     X_test, y_test = test_data
 
-    model.train(X_train, y_train, epochs=10, batch_size=32, validation_split=0.2, patience=5)
+    model.train(X_train, y_train, epochs=1, batch_size=16, validation_split=0.2, patience=5)
     mse = model.evaluate(X_test, y_test)
     
     return mse
@@ -123,9 +137,9 @@ class GRUPredictor(BasePredictor):
     def __init__(self, tickers, start, end):
         super().__init__(GRUModel, tickers, start, end)
         self.search_space = [
-            Integer(10, 200, name='units'),
+            Integer(10, 50, name='units'),
             Real(0.1, 0.5, name='dropout_rate'),
-            Categorical(['adam', 'rmsprop'], name='optimizer')
+            Categorical(['adam'], name='optimizer')
         ]
 
     def optimize_model(self, train_data, test_data=None):
@@ -133,18 +147,19 @@ class GRUPredictor(BasePredictor):
 
         named_evaluate_model = use_named_args(self.search_space)(lambda **params: evaluate_model(self.model_class, train_data, test_data, **params))
 
-        result = gp_minimize(named_evaluate_model, self.search_space, n_calls=10, random_state=0, verbose=True, n_jobs=-1)
+        result = gp_minimize(named_evaluate_model, self.search_space, n_calls=10, random_state=0, verbose=True, n_jobs=-1)  # Reduced n_calls to 5
         results_list.append(result)
         
         return results_list
+
 
 class LSTMPredictor(BasePredictor):
     def __init__(self, tickers, start, end):
         super().__init__(LSTMModel, tickers, start, end)
         self.search_space = [
-            Integer(10, 200, name='units'),
+            Integer(10, 50, name='units'),
             Real(0.1, 0.5, name='dropout_rate'),
-            Categorical(['adam', 'rmsprop'], name='optimizer')
+            Categorical(['adam'], name='optimizer')
         ]
 
     def optimize_model(self, train_data, test_data=None):
@@ -154,17 +169,23 @@ class LSTMPredictor(BasePredictor):
             X_train, y_train = train_data
             X_test, y_test = test_data
 
-            print("X_train shape:", X_train.shape)
-            print("y_train shape:", y_train.shape)
+            print(f"X_train shape: {X_train.shape}\t y_train shape: {y_train.shape}")
 
             model.train(X_train, y_train, epochs=1, batch_size=32, validation_split=0.2, patience=5)
             mse = model.evaluate(X_test, y_test)
             return mse
 
-        result = gp_minimize(evaluate_model, self.search_space, n_calls=10, random_state=0, verbose=True, n_jobs=-1)
+        result = gp_minimize(evaluate_model, self.search_space, n_calls=10, random_state=0, verbose=False, n_jobs=-1)
 
         best_hyperparameters = result.x
-        return best_hyperparameters
+        best_model = self.model_class(**dict(zip([param.name for param in self.search_space], best_hyperparameters)))
+        best_model.train(train_data[0], train_data[1], epochs=1, batch_size=32, validation_split=0.2, patience=5)
+        return best_hyperparameters  # Changed this line to return best_hyperparameters
+
+    def make_predictions(model, X_test):
+        predictions = model.predict(X_test)
+        return predictions
+
 
 
 def save_best_params(best_hyperparameters, filename):
@@ -189,6 +210,8 @@ def load_best_params(filename):
 #     end = '2020-01-01'
 #     n_splits = 2
 
-# print("Training Transformer model...")
-# transformer_predictor = TransformerPredictor(tickers=tickers, start=start, end=end)
-# transformer_predictor.train_and_evaluate(n_splits=n_splits)
+# print("Training ARIMA model...")
+# arima_predictor = ARIMAPredictor(tickers=tickers, start=start, end=end)
+# arima_predictor.download_data() 
+# arima_predictor.train_all_models(arima_predictor.data)
+# predictions = arima_predictor.predict_all_models(60)

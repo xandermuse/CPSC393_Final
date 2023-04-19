@@ -43,131 +43,86 @@ To shut down the Docker container, press Ctrl+C in the terminal.
 
 - **Always remember to shut down the Docker container** when you are done using it. If you do not shut down the container, it will continue to run in the background and use up your computer's resources.
 
-## Class Diagram
-Originally, we had a class diagram that looked like this:
+### file structure
 
+├── main.py
+├── Models/
+│   ├── __init__.py
+│   ├── lstm_model.py
+│   ├── gru_model.py
+│   ├── arima_model.py
+│   └── transformer_model.py
+├── Data/
+│   ├── __init__.py
+│   ├── data_collector.py
+│   └── data_handler.py
+└── Predictors/
+    ├── __init__.py
+    ├── base_predictor.py
+    ├── lstm_predictor.py
+    ├── gru_predictor.py
+    ├── arima_predictor.py
+    └── transformer_predictor.py
+
+##  current class diagram
 ```mermaid
 classDiagram
-    class DataCollector {
-        +collectData(tickers: List[str], start: str, end: str): DataFrame
-        +preprocessData(data: DataFrame): DataFrame
-    }
-    class ModelFactory {
-        +createModel(modelType: String): Model
-    }
-
-    class Model {
-        +build_model()
-        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
-        +predict(X_test)
-    }
-    class LSTMModel {
-        +build_model()
-        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
-        +predict(X_test)
-    }
-    class GRUModel {
-        +build_model()
-        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
-        +predict(X_test)
-    }
-    class TransformerModel {
-        +build_model()
-        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
-        +predict(X_test)
-    }
-    class ARIMAModel {
-        +build_model()
-        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
-        +predict(X_test)
-    }
-    class ProphetModel {
-        +build_model()
-        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
-        +predict(X_test)
-    }
-
-    class EnsembleModel {
-        +addModel(model: Model, weight: float): void
-        +predict(input: DataFrame): DataFrame
-    }
-    DataCollector --> Model
-    ModelFactory --> Model
-    EnsembleModel --> Model
-    Model --|> LSTMModel : Inheritance
-    Model --|> GRUModel : Inheritance
-    Model --|> TransformerModel : Inheritance
-    Model --|> ARIMAModel : Inheritance
-    Model --|> ProphetModel : Inheritance
-```
-### current class diagram
-
-
-```mermaid
-classDiagram
-    class DataCollector {
-        +get_data(tickers: List[str], start: str, end: str): DataFrame
-    }
-    class DataHandler {
-        +time_series_split(data: DataFrame, n_splits: int): TimeSeriesSplit
-        +create_sequences(data: DataFrame, sequence_length: int): Tuple[np.array, np.array]
-    }
     class BasePredictor {
-        +download_data(): void
-        +time_series_split(n_splits: int): TimeSeriesSplit
-        +train_and_evaluate(n_splits: int): void
+        +model_class
+        +tickers
+        +start
+        +end
+        +data_collector
+        +data_handler
+        +download_data()
+        +time_series_split(n_splits)
+        +train_and_evaluate(n_splits)
     }
-    class LSTMPredictor {
-        +optimize_model(train_data: Tuple[np.array, np.array], test_data: Tuple[np.array, np.array]): OptimizeResult
-    }
-    class GRUPredictor {
-        +optimize_model(train_data: Tuple[np.array, np.array], test_data: Tuple[np.array, np.array]): OptimizeResult
+    class TransformerPredictor {
+        +search_space
+        +optimize_model(train_data, test_data)
     }
     class ARIMAPredictor {
-        +optimize_model(train_data: Tuple[np.array, np.array]): OptimizeResult
+        +search_space
+        +models
+        +train_all_models(train_data)
+        +predict_all_models(steps)
+        +optimize_model(train_data)
     }
-    DataCollector --> DataHandler
-    DataHandler --> BasePredictor
-    BasePredictor --|> LSTMPredictor : Inheritance
-    BasePredictor --|> GRUPredictor : Inheritance
-    BasePredictor --|> ARIMAPredictor : Inheritance
-```
-
-```mermaid
-classDiagram
-    class TransformerPredictor {
-        +optimize_model(train_data: Tuple[np.array, np.array], test_data: Tuple[np.array, np.array]): OptimizeResult
+    class GRUPredictor {
+        +search_space
+        +optimize_model(train_data, test_data)
     }
-    class ProphetPredictor {
-        +optimize_model(train_data: Tuple[np.array, np.array]): OptimizeResult
+    class LSTMPredictor {
+        +search_space
+        +optimize_model(train_data, test_data)
     }
-    class Model {
-        +train(X_train, y_train, epochs, batch_size, validation_split, patience)
-        +predict(X_test)
+    class DataCollector {
+        +get_data(tickers, start, end)
     }
-    class LSTMModel {
-    }
-    class GRUModel {
+    class DataHandler {
+        +data_collector
+        +create_sequences(data, sequence_length)
+        +normalize_data(data)
+        +time_series_split(data, n_splits)
     }
     class ARIMAModel {
+        +train(train_data, feature)
+        +predict(steps)
     }
-    class TransformerModel {
-    }
-    class ProphetModel {
-    }
-    class EnsembleModel {
-        +addModel(model: Model, weight: float): void
-        +predict(input: DataFrame): DataFrame
-    }
-    class StockVisualizer {
-        isualize_predictions()
-    }
-    Model --|> LSTMModel : Inheritance
-    Model --|> GRUModel : Inheritance
-    Model --|> ARIMAModel : Inheritance
-    Model --|> TransformerModel : Inheritance
-    Model --|> ProphetModel : Inheritance
+    class LSTMModel
+    class GRUModel
+    class TransformerModel
+
+    BasePredictor <|-- TransformerPredictor
+    BasePredictor <|-- ARIMAPredictor
+    BasePredictor <|-- GRUPredictor
+    BasePredictor <|-- LSTMPredictor
+    BasePredictor --> DataCollector
+    BasePredictor --> DataHandler
+    ARIMAPredictor --> ARIMAModel
 ```
+
 ---
 
 ## Here's a high-level description of how the current code works:

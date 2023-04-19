@@ -7,9 +7,10 @@ class ARIMAModel:
         self.order = order
         self.model = None
 
-    def train(self, series):
-        self.model = ARIMA(series, order=self.order)
+    def train(self, series, feature):
+        self.model = ARIMA(series[feature], order=self.order)
         self.model = self.model.fit()
+
 
     def predict(self, steps):
         if self.model is None:

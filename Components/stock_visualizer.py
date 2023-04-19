@@ -1,15 +1,21 @@
 import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import pandas as pd
+import numpy as np
 
 class StockVisualizer:
     def __init__(self, original_data, true_values, predictions, future_predictions):
         self.original_data = original_data
         self.true_values = true_values
-        self.predictions = predictions
+        
+        # Convert predictions to a NumPy array and reshape it
+        predictions_array = np.array(predictions)
+        predictions_reshaped = predictions_array.reshape(-1, predictions_array.shape[2])
+        self.predictions = pd.DataFrame(predictions_reshaped, columns=original_data.columns, index=original_data.index[-len(predictions_reshaped):])
+        
         self.future_predictions = future_predictions
         self.future_predictions_df = self.prepare_future_predictions_df()
-
+    
     def prepare_future_predictions_df(self):
         columns = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
         future_predictions_df = pd.DataFrame(self.future_predictions, columns=columns)
@@ -29,6 +35,7 @@ class StockVisualizer:
         plt.xlabel('Date')
         plt.ylabel('Price')
         plt.plot(self.original_data.index, self.original_data['Close'], label='Original Data', color='blue')
+        plt.plot(self.predictions.index, self.predictions['Close'], label='Predictions', color='red')
         plt.plot(self.future_predictions_df.index, self.future_predictions_df['Close'], label='Future Predictions', color='orange')
         plt.legend()
         plt.show()

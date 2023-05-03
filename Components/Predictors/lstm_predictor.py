@@ -74,12 +74,12 @@ class LSTMPredictor:
             model = LSTMModel(**params)
             X_train, y_train = train_data
             X_test, y_test = test_data
-            model.train(X_train, y_train, epochs=50, batch_size=32, validation_split=0.2, patience=5)
+            model.train(X_train, y_train, epochs=5, batch_size=32, validation_split=0.2, patience=5)
             mse = model.evaluate(X_test, y_test)
             return mse
 
         # Adjust n_calls to control the number of times the model will be run during optimization
-        result = gp_minimize(evaluate_model, self.search_space, n_calls=100, random_state=0, verbose=False, n_jobs=-1)
+        result = gp_minimize(evaluate_model, self.search_space, n_calls=10, random_state=0, verbose=False, n_jobs=-1)
         best_hyperparameters = result.x
         best_model = LSTMModel(**dict(zip([param.name for param in self.search_space], best_hyperparameters)))
         best_model.train(train_data[0], train_data[1], epochs=10, batch_size=32, validation_split=0.2, patience=5)

@@ -6,6 +6,8 @@ from tensorflow.keras.layers import Dense, LSTM, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import ReduceLROnPlateau
 
+EPOCHS = 1
+
 class LSTMModel:
     def __init__(self, units=50, num_layers=2, dropout_rate=0.2, optimizer='adam', learning_rate=0.001):
         self.model = Sequential()
@@ -20,7 +22,7 @@ class LSTMModel:
         self.learning_rate = learning_rate
         self.model.compile(optimizer=optimizer, loss='mean_squared_error')
 
-    def train(self, X_train, y_train, epochs=100, batch_size=32, validation_split=0.2, patience=15):
+    def train(self, X_train, y_train, epochs=EPOCHS, batch_size=32, validation_split=0.2, patience=15):
         early_stopping = EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True)
         lr_schedule = ReduceLROnPlateau(monitor='val_loss', factor=0.9, patience=10, verbose=1)
 

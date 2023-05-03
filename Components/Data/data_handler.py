@@ -43,3 +43,18 @@ class DataHandler:
         return tscv
 
 
+    def create_future_dataframe(self, model_predictor, days_to_predict=7):
+        future_predictions = model_predictor.predict_future(days_to_predict=days_to_predict)
+
+        last_5_days = self.stock_data.tail(5)
+
+        last_date = pd.to_datetime(last_5_days.index[-1])
+        future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=future_predictions.shape[0])
+
+        future_predictions_df = pd.DataFrame(future_predictions, columns=last_5_days.columns, index=future_dates)
+        for i in future_predictions_df.columns:
+            future_predictions_df[i] = future_predictions_df[i].astype(float)
+
+        combined_data = pd.concat([last_5_days, future_predictions_df])
+
+        return combined_data

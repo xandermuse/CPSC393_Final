@@ -7,7 +7,6 @@ from tensorflow.keras.callbacks import EarlyStopping
 class GRUModel:
     def __init__(self, units=50, dropout_rate=0.2, optimizer='adam'):
         self.model = Sequential()
-
         self.model.add(GRU(units, return_sequences=True, input_shape=(60, 6)))
         self.model.add(Dropout(dropout_rate))
         self.model.add(GRU(units))

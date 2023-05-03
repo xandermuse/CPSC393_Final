@@ -2,6 +2,9 @@ from .base_predictor import BasePredictor
 from skopt.utils import use_named_args
 from skopt.space import Integer
 from Models.arima_model import ARIMAModel
+from sklearn.metrics import mean_squared_error
+# bayesian optimization
+from skopt import gp_minimize
 
 
 class ARIMAPredictor(BasePredictor):

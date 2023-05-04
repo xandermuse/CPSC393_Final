@@ -9,7 +9,17 @@ from Components.Models.lstm_model import LSTMModel
 from Components.Data.data_handler import DataHandler
 
 class LSTMPredictor:
+    """A class for training, evaluating and optimizing LSTM models for stock price prediction.
+    """
     def __init__(self, tickers, start, end, model=None):
+        """Initializes the LSTMPredictor with given stock tickers, date range, and an optional model.
+
+        Args:
+            tickers (list): List of stock tickers to be used for prediction.
+            start (str): Start date for the stock data in the format 'YYYY-MM-DD'.
+            end (str): End date for the stock data in the format 'YYYY-MM-DD'.
+            model (LSTMModel, optional): Pre-trained LSTMModel instance. Defaults to None.
+        """
         self.tickers = tickers
         self.start = start
         self.end = end
@@ -27,6 +37,15 @@ class LSTMPredictor:
         ]
 
     def train_and_evaluate(self, n_splits=5, sequence_length=60):
+        """Trains and evaluates the LSTM model using TimeSeriesSplit cross-validation.
+
+        Args:
+            n_splits (int, optional): Number of splits for time series cross-validation. Defaults to 5.
+            sequence_length (int, optional): Length of the input sequence for the LSTM model. Defaults to 60.
+
+        Returns:
+            tuple: Tuple containing all_true_values, all_predictions, mse_scores, mae_scores, and r2_scores.
+        """
         self.data.preprocess_data(sequence_length)
         X, y = self.data.X, self.data.y
 
@@ -67,8 +86,22 @@ class LSTMPredictor:
 
 
     def optimize_model(self, train_data, test_data=None):
+        """Optimizes the LSTM model using Bayesian optimization with Gaussian processes.
+
+        Args:
+            train_data (tuple): Tuple containing the training data (X_train, y_train).
+            test_data (tuple, optional): Tuple containing the test data (X_test, y_test). Defaults to None.
+
+        Returns:
+            tuple: Tuple containing the best_hyperparameters and the best_model.
+        """
         @use_named_args(self.search_space)
         def evaluate_model(**params):
+            """Evaluates the LSTM model with given hyperparameters.
+
+            Returns:
+                float: Mean squared error for the model with given hyperparameters.
+            """
             self.current_call += 1
             print(f"Current call: {self.current_call}")
             model = LSTMModel(**params)
@@ -90,6 +123,14 @@ class LSTMPredictor:
         return best_hyperparameters, best_model
 
     def predict_future(self, days_to_predict=7):
+        """Predicts future stock prices for the given number of days.
+
+        Args:
+            days_to_predict (int, optional): Number of days to predict stock prices for. Defaults to 7.
+
+        Returns:
+            numpy.ndarray: Array containing the predicted stock prices for the given number of days.
+        """
         X_test, _ = self.test_data  
         input_data = X_test[-1] 
 

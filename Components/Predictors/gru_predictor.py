@@ -9,7 +9,17 @@ from Components.Models.gru_model import GRUModel
 from Components.Data.data_handler import DataHandler
 
 class GRUPredictor:
+    """A class for stock price prediction using Gated Recurrent Unit (GRU) models.
+    """
     def __init__(self, tickers, start, end, model=None):
+        """Initializes the GRUPredictor with the given tickers and date range.
+
+        Args:
+            tickers (list): List of stock tickers.
+            start (str): Start date for the stock data in 'YYYY-MM-DD' format.
+            end (str): End date for the stock data in 'YYYY-MM-DD' format.
+            model (GRUModel, optional): Pre-trained GRUModel instance. Defaults to None.
+        """
         self.tickers = tickers
         self.start = start
         self.end = end
@@ -27,6 +37,15 @@ class GRUPredictor:
         ]
 
     def train_and_evaluate(self, n_splits=5, sequence_length=60):
+        """Trains and evaluates the model using time series cross-validation.
+
+        Args:
+            n_splits (int, optional): Number of splits for time series cross-validation. Defaults to 5.
+            sequence_length (int, optional): Length of the input sequence. Defaults to 60.
+
+        Returns:
+            tuple: Tuple containing true_values, predictions, mse_scores, mae_scores, and r2_scores.
+        """
         self.data.preprocess_data(sequence_length)
         X, y = self.data.X, self.data.y
 
@@ -67,8 +86,22 @@ class GRUPredictor:
 
 
     def optimize_model(self, train_data, test_data=None):
+        """Optimizes the GRU model by searching for the best hyperparameters using Gaussian process optimization.
+
+        Args:
+            train_data (tuple): Tuple containing the training data (X_train, y_train).
+            test_data (tuple, optional): Tuple containing the test data (X_test, y_test). Defaults to None.
+
+        Returns:
+            tuple: Tuple containing the best_hyperparameters and the best_model.
+        """
         @use_named_args(self.search_space)
         def evaluate_model(**params):
+            """Evaluates the GRU model with given hyperparameters.
+
+            Returns:
+                float: Mean squared error for the model with given hyperparameters.
+            """
             self.current_call += 1
             print(f"Current call: {self.current_call}")
             model = GRUModel(**params)
@@ -90,6 +123,14 @@ class GRUPredictor:
         return best_hyperparameters, best_model
 
     def predict_future(self, days_to_predict=7):
+        """Predicts future stock prices for the given number of days using the trained GRU model.
+
+        Args:
+            days_to_predict (int, optional): The number of days to predict stock prices for. Defaults to 7.
+
+        Returns:
+            numpy.ndarray: Array of predicted stock prices for the given number of days.
+        """
         X_test, _ = self.test_data  
         input_data = X_test[-1] 
 

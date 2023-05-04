@@ -9,7 +9,18 @@ from tensorflow.keras.callbacks import ReduceLROnPlateau
 EPOCHS = 1
 
 class LSTMModel:
+    """LSTMModel is a class for creating and training LSTM models for stock price prediction.
+    """
     def __init__(self, units=50, num_layers=2, dropout_rate=0.2, optimizer='adam', learning_rate=0.001):
+        """Initializes the LSTMModel with the given hyperparameters.
+
+        Args:
+            units (int, optional): Number of recurrent units in each LSTM layer. Defaults to 50.
+            num_layers (int, optional): Number of LSTM layers in the model. Defaults to 2.
+            dropout_rate (float, optional): Dropout rate for the dropout layers. Defaults to 0.2.
+            optimizer (str, optional): Optimizer for training the model. Defaults to 'adam'.
+            learning_rate (float, optional): Learning rate for the optimizer. Defaults to 0.001.
+        """
         self.model = Sequential()
         for i in range(num_layers):
             if i == num_layers - 1:
@@ -23,6 +34,16 @@ class LSTMModel:
         self.model.compile(optimizer=optimizer, loss='mean_squared_error')
 
     def train(self, X_train, y_train, epochs=EPOCHS, batch_size=32, validation_split=0.2, patience=15):
+        """Trains the LSTM model on the given training data.
+
+        Args:
+            X_train (np.array): Training data features.
+            y_train (np.array): Training data target values.
+            epochs (int, optional): Number of training epochs. Defaults to EPOCHS.
+            batch_size (int, optional): Batch size for training. Defaults to 32.
+            validation_split (float, optional): Fraction of the training data to be used as validation data. Defaults to 0.2.
+            patience (int, optional): Number of epochs with no improvement after which training will be stopped. Defaults to 15.
+        """
         early_stopping = EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True)
         lr_schedule = ReduceLROnPlateau(monitor='val_loss', factor=0.9, patience=10, verbose=1)
 
@@ -31,7 +52,24 @@ class LSTMModel:
         self.val_loss = history.history['val_loss']
 
     def predict(self, X_test):
+        """Predicts stock prices for the given test data.
+
+        Args:
+            X_test (np.array): Test data features.
+
+        Returns:
+            np.array: Predicted stock prices.
+        """
         return self.model.predict(X_test)
 
     def evaluate(self, X_test, y_test):
+        """Evaluates the model on the given test data.
+
+        Args:
+            X_test (np.array): Test data features.
+            y_test (np.array): Test data target values.
+
+        Returns:
+            float: Mean squared error of the model's predictions.
+        """
         return self.model.evaluate(X_test, y_test)

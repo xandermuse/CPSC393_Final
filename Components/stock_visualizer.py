@@ -4,7 +4,19 @@ import pandas as pd
 import numpy as np
 
 class StockVisualizer:
+    """StockVisualizer is a class for visualizing stock price data and predictions.
+    """
     def __init__(self, original_data, true_values, predictions, future_predictions, dates, sequence_length=60):
+        """Initializes the StockVisualizer with given data.
+
+        Args:
+            original_data (pd.DataFrame): Original stock price data.
+            true_values (np.array): True stock prices for the test data.
+            predictions (np.array): Predicted stock prices for the test data.
+            future_predictions (np.array): Predicted stock prices for future days.
+            dates (pd.Series): Dates corresponding to the original_data.
+            sequence_length (int, optional): Sequence length used in data preprocessing. Defaults to 60.
+        """
         self.original_data = original_data
         self.true_values = true_values
         self.predictions = predictions
@@ -18,6 +30,8 @@ class StockVisualizer:
 
 
     def visualize_predictions(self):
+        """Visualizes the stock price predictions against the true values.
+        """
         plt.figure(figsize=(14, 6))
         plt.clf() 
 

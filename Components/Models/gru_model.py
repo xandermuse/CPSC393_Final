@@ -24,12 +24,12 @@ class GRUModel:
             learning_rate (float, optional): Learning rate for the optimizer. Defaults to 0.001.
         """
         self.model = Sequential()
-        for i in range(num_layers):
-            if i == num_layers - 1:
-                self.model.add(GRU(units=units, input_shape=(None, 6)))
-            else:
-                self.model.add(GRU(units=units, return_sequences=True, input_shape=(None, 6)))
-            self.model.add(Dropout(dropout_rate))
+        model = Sequential()
+        model.add(Embedding(vocab_size, 50, input_length=seq_length))
+        model.add(LSTM(100, return_sequences=True))
+        model.add(LSTM(100))
+        model.add(LSTM(100))
+        model.add(Dense(100, activation='relu'))
         self.model.add(Dense(6))
         self.optimizer = optimizer
         self.learning_rate = learning_rate

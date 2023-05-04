@@ -22,7 +22,17 @@ from Components.Data.data_handler import DataHandler
 from typing import TYPE_CHECKING
 
 class BasePredictor:
+    """Base class for stock price predictors.
+    """
     def __init__(self, model_class, tickers, start_date, end_date):
+        """Initializes the BasePredictor with the given model class, tickers, and date range.
+
+        Args:
+            model_class (object): Model class to be used for prediction.
+            tickers (list): List of stock tickers.
+            start_date (str): Start date for the stock data in 'YYYY-MM-DD' format.
+            end_date (str): End date for the stock data in 'YYYY-MM-DD' format.
+        """
         self.model_class = model_class
         self.tickers = tickers
         self.start_date = start_date
@@ -31,6 +41,14 @@ class BasePredictor:
         self.data_handler = DataHandler(tickers, start_date, end_date)
 
     def train_and_evaluate(self, n_splits=2):
+        """Trains and evaluates the model using time series cross-validation.
+
+        Args:
+            n_splits (int, optional): Number of splits for time series cross-validation. Defaults to 2.
+
+        Returns:
+            tuple: Tuple containing true_values, predictions, mse_scores, mae_scores, and r2_scores.
+        """
         self.data_handler.preprocess_data()
         tscv = TimeSeriesSplit(n_splits=n_splits)
 
@@ -71,15 +89,35 @@ class BasePredictor:
 
 
     def save_best_params(self, best_hyperparameters, file_name):
+        """Saves the best hyperparameters to a file.
+
+        Args:
+            best_hyperparameters (dict): Dictionary containing the best hyperparameters.
+            file_name (str): File name to save the best hyperparameters.
+        """
         with open(file_name, 'wb') as f:
             dill.dump(best_hyperparameters, f)
 
     def load_best_params(self, file_name):
+        """Loads the best hyperparameters from a file.
+
+        Args:
+            file_name (str): File name to load the best hyperparameters from.
+
+        Returns:
+            dict: Dictionary containing the best hyperparameters.
+        """
         with open(file_name, 'rb') as f:
             best_hyperparameters = dill.load(f)
         return best_hyperparameters
 
 def save_best_params(best_hyperparameters, file_name):
+    """Saves the best hyperparameters to a file.
+
+    Args:
+        best_hyperparameters (dict): Dictionary containing the best hyperparameters.
+        file_name (str): File name to save the best hyperparameters.
+    """
     with open(file_name, 'wb') as f:
         dill.dump(best_hyperparameters, f)
 

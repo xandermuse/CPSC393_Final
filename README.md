@@ -35,7 +35,7 @@ After building the Docker image, you can run the project using the following com
 ```bash
 docker run -it --rm -p 8000:8000 cpsc393_stock_pred
 ```
-A link will be given in the terminal. Copy and paste the link into your browser to access the Jupyter notebook. The testing notebook is called 'Testing.ipynb'.
+runs the main.py file
 
 ### Shutting Down the Docker Container
 To shut down the Docker container, press Ctrl+C in the terminal.

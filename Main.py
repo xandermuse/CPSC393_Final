@@ -1,32 +1,62 @@
 import sys
-sys.path.append("/Final")
 import pandas as pd
-
-
 import datetime as dt
 from Components.Predictors.lstm_predictor import LSTMPredictor
 from Components.Predictors.gru_predictor import GRUPredictor
+from Components.Models.prophet_model import ProphetModel
 from Components.stock_visualizer import StockVisualizer
 from Components.Data.data_handler import DataHandler
 
 import warnings
 warnings.filterwarnings("ignore")
-    
+
 tickers = ["TSLA"]
 start = dt.datetime(2021, 1, 1)
-end = dt.datetime(2023, 5, 2)
-n_splits = 2            # no larger than 6
+end = dt.datetime(2023, 5, 7)
+n_splits = 2  # no larger than 6
 days_to_predict = 7
 sys.path.insert(0, 'Components')
 
-
 if __name__ == "__main__":
-
     # Create DataHandler instance
     data_handler = DataHandler(tickers=tickers, start_date=start, end_date=end)
     data_handler.preprocess_data(sequence_length=60)
 
-    # Create GRUPredictor instance
+    # Create ProphetModel instance
+    prophet_model = ProphetModel(tickers, start, end)
+    # Assuming data_handler.stock_data has the columns you want to predict
+    prophet_model.train(data_handler.stock_data, target_cols=['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume'])
+
+    # Prepare the data for Prophet
+    prophet_data = data_handler.stock_data[['Close']].reset_index()
+    prophet_data.columns = ['ds', 'y']
+    prophet_data['ds'] = pd.to_datetime(prophet_data['ds'])  # Convert 'ds' column to datetime objects
+
+    # Define the target columns
+    target_cols = ['Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume']
+
+    # Optimize hyperparameters for each target column
+    for col in target_cols:
+        # Prepare the data for Prophet
+        df = data_handler.stock_data[[col]].reset_index()
+        df.columns = ['ds', 'y']
+        df['ds'] = pd.to_datetime(df['ds'])  # Convert 'ds' column to datetime objects
+
+        # Optimize hyperparameters and train the model with the best parameters
+        best_params, best_model = prophet_model.optimize_hyperparameters(df, col)
+        print(f"Best parameters for {col} (additive):", best_params['additive'])
+        print(f"Best parameters for {col} (multiplicative):", best_params['multiplicative'])
+        prophet_model.best_params[col] = best_params
+
+    # Create the future dataframe with predictions for the specified target columns
+    prophet_future_df = prophet_model.create_future_dataframe(data_handler.stock_data, future_periods=days_to_predict, target_cols=target_cols)
+
+    # Print the future dataframe with predictions
+    print("\nProphet future predictions:")
+    print(prophet_future_df)
+
+
+    # # Create GRUPredictor instance
     gru_predictor = GRUPredictor(tickers, start, end)
     true_values_gru, predictions_gru, mse_scores_gru, mae_scores_gru, r2_scores_gru = gru_predictor.train_and_evaluate(n_splits=n_splits)
 
@@ -45,8 +75,6 @@ if __name__ == "__main__":
     best_hyperparameters = lstm_predictor.optimize_model((lstm_predictor.data.X, lstm_predictor.data.y), lstm_predictor.test_data)
     lstm_future_predictions = lstm_predictor.predict_future(days_to_predict=days_to_predict)
 
-
-
     print("GRU Combined Data:")
     print(combined_data_gru)
 
@@ -54,23 +82,92 @@ if __name__ == "__main__":
     print("LSTM Combined Data:")
     print(combined_data_lstm)
     
-    # # Create DataHandler instance
-    # data_handler = DataHandler(tickers=tickers, start_date=start, end_date=end)
-    # data_handler.preprocess_data(sequence_length=60)
-    
-    # last_5_days = data_handler.stock_data.tail(5)
-    
-    # # Create a DataFrame for the 7 predicted days
-    # last_date = pd.to_datetime(last_5_days.index[-1])
-    # future_dates = pd.date_range(start=last_date + pd.Timedelta(days=1), periods=lstm_future_predictions.shape[0])
+    # Extracting relevant predictions from the different models
+    lstm_open, lstm_high, lstm_low, lstm_close, lstm_adj, lstm_vol = lstm_future_predictions.T
+    gru_open, gru_high, gru_low, gru_close, gru_adj, gru_vol = gru_future_predictions.T
+    prophet_open = prophet_future_df['Open']
+    prophet_high = prophet_future_df['High']
+    prophet_low = prophet_future_df['Low']
+    prophet_close = prophet_future_df['Close']
+    prophet_adj = prophet_future_df['Adj Close']
+    prophet_vol = prophet_future_df['Volume']
 
-    # future_predictions_df = pd.DataFrame(lstm_future_predictions, columns=last_5_days.columns, index=future_dates)
-    # for i in future_predictions_df.columns:
-    #     future_predictions_df[i] = future_predictions_df[i].astype(float)
-    # # Combine the original data and the predictions
-    # combined_data = pd.concat([last_5_days, future_predictions_df])
+    # prophet_open, prophet_high, prophet_low, prophet_close, prophet_adj, prophet_vol = prophet_future_df.T
+    print("Prophet Open:")
+    print(prophet_open)
+
     
-    # # Print the DataFrame with the last 5 days of the original data and the 7 predicted days
-    # print(combined_data)
 
+    # Create the DataFrame with the given structure
+    predictions_df = pd.DataFrame({
+        'lstm_close': lstm_close, 'gru_close': gru_close, 'prophet_close': prophet_close, 
+        'lstm_open': lstm_open, 'gru_open': gru_open, 'prophet_open': prophet_open, 
+        'lstm_high': lstm_high, 'gru_high': gru_high, 'prophet_high': prophet_high, 
+        'lstm_low': lstm_low, 'gru_low': gru_low, 'prophet_low': prophet_low, 
+        'lstm_adj': lstm_adj, 'gru_adj': gru_adj, 'prophet_adj': prophet_adj, 
+        'lstm_vol': lstm_vol, 'gru_vol': gru_vol, 'prophet_vol': prophet_vol
+    }, index=combined_data_gru.index[-days_to_predict:])
 
+    # Calculate the mean for each row
+    predictions_df['mean_close'] = predictions_df[['lstm_close', 'gru_close', 'prophet_close']].mean(axis=1)
+    predictions_df['mean_open'] = predictions_df[['lstm_open', 'gru_open', 'prophet_open']].mean(axis=1)
+    predictions_df['mean_high'] = predictions_df[['lstm_high', 'gru_high', 'prophet_high']].mean(axis=1)
+    predictions_df['mean_low'] = predictions_df[['lstm_low', 'gru_low', 'prophet_low']].mean(axis=1)
+    predictions_df['mean_adj'] = predictions_df[['lstm_adj', 'gru_adj', 'prophet_adj']].mean(axis=1)
+    predictions_df['mean_vol'] = predictions_df[['lstm_vol', 'gru_vol', 'prophet_vol']].mean(axis=1)
+
+    print("Predictions DataFrame:")
+    print(predictions_df)
+
+    # create a close price dataframe include mean column
+    close_df = pd.DataFrame({
+        'lstm_close': lstm_close, 'gru_close': gru_close, 'prophet_close': prophet_close,
+        'mean_close': predictions_df['mean_close']
+    }, index=combined_data_gru.index[-days_to_predict:])
+    
+    open_df = pd.DataFrame({
+        'lstm_open': lstm_open, 'gru_open': gru_open, 'prophet_open': prophet_open,
+        'mean_open': predictions_df['mean_open']
+    }, index=combined_data_gru.index[-days_to_predict:])
+
+    high_df = pd.DataFrame({
+        'lstm_high': lstm_high, 'gru_high': gru_high, 'prophet_high': prophet_high,
+        'mean_high': predictions_df['mean_high']
+    }, index=combined_data_gru.index[-days_to_predict:])
+
+    low_df = pd.DataFrame({
+        'lstm_low': lstm_low, 'gru_low': gru_low, 'prophet_low': prophet_low,
+        'mean_low': predictions_df['mean_low']
+    }, index=combined_data_gru.index[-days_to_predict:])
+
+    adj_df = pd.DataFrame({
+        'lstm_adj': lstm_adj, 'gru_adj': gru_adj, 'prophet_adj': prophet_adj,
+        'mean_adj': predictions_df['mean_adj']
+    }, index=combined_data_gru.index[-days_to_predict:])
+
+    vol_df = pd.DataFrame({
+        'lstm_vol': lstm_vol, 'gru_vol': gru_vol, 'prophet_vol': prophet_vol,
+        'mean_vol': predictions_df['mean_vol']
+    }, index=combined_data_gru.index[-days_to_predict:])
+
+    print("Close DataFrame:")
+    print(close_df)
+    print("Open DataFrame:")
+    print(open_df)
+    print("High DataFrame:")
+    print(high_df)
+    print("Low DataFrame:")
+    print(low_df)
+    print("Adj DataFrame:")
+    print(adj_df)
+    print("Vol DataFrame:")
+    print(vol_df)
+    # save the dataframe to csv use {ticker}_close.csv
+    close_df.to_csv(f'{tickers[0]}_close.csv')
+    open_df.to_csv(f'{tickers[0]}_open.csv')
+    high_df.to_csv(f'{tickers[0]}_high.csv')
+    low_df.to_csv(f'{tickers[0]}_low.csv')
+    adj_df.to_csv(f'{tickers[0]}_adj.csv')
+    vol_df.to_csv(f'{tickers[0]}_vol.csv')
+    
+    

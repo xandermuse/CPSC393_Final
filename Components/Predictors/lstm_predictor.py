@@ -28,7 +28,7 @@ class LSTMPredictor:
         self.test_data = None
         self.current_call = 0
 
-        self.search_space = [
+        self.search_space = [   
             Integer(10, 200, name="units"),
             Integer(1, 5, name="num_layers"),
             Real(0.0, 0.9, name="dropout_rate"),

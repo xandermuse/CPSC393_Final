@@ -5,13 +5,15 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, LSTM, Dropout
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.callbacks import ReduceLROnPlateau
+from kerastuner.tuners import RandomSearch
+
 
 EPOCHS = 1
 
 class LSTMModel:
     """LSTMModel is a class for creating and training LSTM models for stock price prediction.
     """
-    def __init__(self, units=50, num_layers=2, dropout_rate=0.2, optimizer='adam', learning_rate=0.001):
+    def __init__(self, units=50, num_layers=2, dropout_rate=0.2, optimizer='adam', learning_rate=0.001, model=None):
         """Initializes the LSTMModel with the given hyperparameters.
 
         Args:
@@ -21,17 +23,21 @@ class LSTMModel:
             optimizer (str, optional): Optimizer for training the model. Defaults to 'adam'.
             learning_rate (float, optional): Learning rate for the optimizer. Defaults to 0.001.
         """
-        self.model = Sequential()
-        for i in range(num_layers):
-            if i == num_layers - 1:
-                self.model.add(LSTM(units=units, input_shape=(None, 6)))
-            else:
-                self.model.add(LSTM(units=units, return_sequences=True, input_shape=(None, 6)))
-            self.model.add(Dropout(dropout_rate))
-        self.model.add(Dense(6))
-        self.optimizer = optimizer
-        self.learning_rate = learning_rate
-        self.model.compile(optimizer=optimizer, loss='mean_squared_error')
+        
+        if model:
+            self.model = model
+        else: 
+            self.model = Sequential()
+            for i in range(num_layers):
+                if i == num_layers - 1:
+                    self.model.add(LSTM(units=units, input_shape=(None, 6)))
+                else:
+                    self.model.add(LSTM(units=units, return_sequences=True, input_shape=(None, 6)))
+                self.model.add(Dropout(dropout_rate))
+            self.model.add(Dense(6))
+            self.optimizer = optimizer
+            self.learning_rate = learning_rate
+            self.model.compile(optimizer=optimizer, loss='mean_squared_error')
 
     def train(self, X_train, y_train, epochs=EPOCHS, batch_size=32, validation_split=0.2, patience=15):
         """Trains the LSTM model on the given training data.

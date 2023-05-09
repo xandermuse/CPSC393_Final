@@ -67,12 +67,13 @@ if __name__ == "__main__":
     # Make future predictions with the optimized GRU model and create a combined DataFrame
     combined_data_gru = data_handler.create_future_dataframe(gru_predictor, days_to_predict=days_to_predict)
 
+    '''Updated'''
     # Create LSTMPredictor instance
     lstm_predictor = LSTMPredictor(tickers, start, end)
     true_values, predictions, mse_scores, mae_scores, r2_scores = lstm_predictor.train_and_evaluate(n_splits=n_splits)
-    
+
     # Optimize the LSTM model
-    best_hyperparameters = lstm_predictor.optimize_model((lstm_predictor.data.X, lstm_predictor.data.y), lstm_predictor.test_data)
+    lstm_predictor.optimize_model_with_tuner((lstm_predictor.data.X, lstm_predictor.data.y), lstm_predictor.test_data, n_trials=10)
     lstm_future_predictions = lstm_predictor.predict_future(days_to_predict=days_to_predict)
 
     print("GRU Combined Data:")

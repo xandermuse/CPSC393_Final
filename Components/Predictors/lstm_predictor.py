@@ -8,6 +8,10 @@ import numpy as np
 from Components.Models.lstm_model import LSTMModel
 from Components.Data.data_handler import DataHandler
 
+from tensorflow.keras.callbacks import EarlyStopping
+from kerastuner.tuners import RandomSearch
+
+
 class LSTMPredictor:
     """A class for training, evaluating and optimizing LSTM models for stock price prediction.
     """
@@ -84,6 +88,58 @@ class LSTMPredictor:
 
         return all_true_values, all_predictions, mse_scores, mae_scores, r2_scores
 
+    def optimize_model_with_tuner(self, train_data, test_data=None, n_trials=100):
+        """Optimizes the LSTM model using the Keras Tuner.
+
+        Args:
+            train_data (tuple): Tuple containing the training data (X_train, y_train).
+            test_data (tuple, optional): Tuple containing the test data (X_test, y_test). Defaults to None.
+            n_trials (int, optional): Number of trials for the tuner. Defaults to 10.
+        """
+        X_train, y_train = train_data
+        X_test, y_test = test_data
+
+        def build_model(hp):
+            model = LSTMModel(
+                units=hp.Int("units", 10, 200),
+                num_layers=hp.Int("num_layers", 1, 5),
+                dropout_rate=hp.Float("dropout_rate", 0.0, 0.9),
+                learning_rate=hp.Float("learning_rate", 0.0001, 0.01, log=True),
+                optimizer=hp.Choice("optimizer", ["adam", "rmsprop"]),
+            )
+            return model.model
+
+        tuner = RandomSearch(
+            build_model,
+            objective="val_loss",
+            max_trials=n_trials,
+            executions_per_trial=1,
+            directory="my_dir",
+            project_name="lstm_hoard",
+        )
+
+        early_stopping = EarlyStopping(monitor="val_loss", patience=20, restore_best_weights=True)
+
+        tuner.search(
+            X_train,
+            y_train,
+            epochs=200,
+            validation_data=(X_test, y_test),
+            callbacks=[early_stopping],
+        )
+
+        # Train the best model
+        best_trial = tuner.oracle.get_best_trials(num_trials=1)[0]
+        best_hp = best_trial.hyperparameters
+        best_model = build_model(best_hp)
+        best_model.fit(X_train, y_train, epochs=200, validation_data=(X_test, y_test), callbacks=[early_stopping])
+
+        # Save the best model
+        best_model.save('model.h5')
+
+        # Update the current model in the LSTMPredictor class
+        self.model = LSTMModel(model=best_model)
+
 
     def optimize_model(self, train_data, test_data=None):
         """Optimizes the LSTM model using Bayesian optimization with Gaussian processes.
@@ -107,7 +163,7 @@ class LSTMPredictor:
             model = LSTMModel(**params)
             X_train, y_train = train_data
             X_test, y_test = test_data
-            model.train(X_train, y_train, epochs=5, batch_size=32, validation_split=0.2, patience=5)
+            model.train(X_train, y_train, epochs=400, batch_size=32, validation_split=0.2, patience=20)
             mse = model.evaluate(X_test, y_test)
             return mse
 

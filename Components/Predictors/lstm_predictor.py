@@ -7,6 +7,12 @@ import numpy as np
 
 from Components.Models.lstm_model import LSTMModel
 from Components.Data.data_handler import DataHandler
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Embedding
+from tensorflow.keras.layers import LSTM
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
+
 
 from tensorflow.keras.callbacks import EarlyStopping
 from kerastuner.tuners import RandomSearch
@@ -98,7 +104,7 @@ class LSTMPredictor:
         """
         X_train, y_train = train_data
         X_test, y_test = test_data
-
+        '''
         def build_model(hp):
             model = LSTMModel(
                 units=hp.Int("units", 10, 200),
@@ -108,6 +114,20 @@ class LSTMPredictor:
                 optimizer=hp.Choice("optimizer", ["adam", "rmsprop"]),
             )
             return model.model
+        '''
+
+        def build_model(hp):
+            model = Sequential()
+
+            for i in range(hp.Int('num_layers', 1, 3)):
+                model.add(LSTM(hp.Int(f'lstm_units_{i}', 128, 512, 32), return_sequences=True if i < hp.Int('num_layers', 1, 3) - 1 else False))
+
+            model.add(Dense(hp.Int('dense_units', 128, 512, 32), activation='relu'))
+            model.add(Dense(1, activation='linear'))
+
+            model.compile(loss='mean_squared_error', optimizer=Adam(hp.Choice('learning_rate', [1e-2, 1e-3, 1e-4])), metrics=['mae'])
+
+            return model
 
         tuner = RandomSearch(
             build_model,
@@ -141,7 +161,14 @@ class LSTMPredictor:
         best_model.fit(X_train, y_train, epochs=200, validation_data=(X_test, y_test), callbacks=[early_stopping])
 
         # Save the best model
-        best_model.save('model.h5')
+        best_model.save('best_model2.h5')
+        
+        top_n_models = 5
+        for i, trial in enumerate(tuner.oracle.get_best_trials(num_trials=top_n_models)):
+            hp = trial.hyperparameters
+            model = build_model(hp)
+            model.fit(X_train, y_train, epochs=200, validation_data=(X_test, y_test), callbacks=[early_stopping])
+            model.save(f'model_{i + 1}.h5')
 
         # Update the current model in the LSTMPredictor class
         self.model = LSTMModel(model=best_model)

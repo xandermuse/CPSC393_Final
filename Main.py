@@ -11,8 +11,8 @@ import warnings
 warnings.filterwarnings("ignore")
 
 tickers = ["TSLA"]
-start = dt.datetime(2021, 1, 1)
-end = dt.datetime(2023, 5, 7)
+start = dt.datetime(2020, 1, 1)
+end = dt.datetime(2023, 5, 9)
 n_splits = 2  # no larger than 6
 days_to_predict = 7
 sys.path.insert(0, 'Components')
@@ -170,4 +170,32 @@ if __name__ == "__main__":
     adj_df.to_csv(f'{tickers[0]}_adj.csv')
     vol_df.to_csv(f'{tickers[0]}_vol.csv')
     
-    
+    # dataframe for mean predictions
+    mean_df = pd.DataFrame({
+            'mean_close': predictions_df['mean_close'],
+            'mean_open': predictions_df['mean_open'],
+            'mean_high': predictions_df['mean_high'],
+            'mean_low': predictions_df['mean_low'],
+            'mean_adj': predictions_df['mean_adj'],
+            'mean_vol': predictions_df['mean_vol']
+        }, index=combined_data_gru.index[-days_to_predict:])
+
+    print("Mean DataFrame:")
+    print(mean_df)
+
+    mean_df.to_csv(f'{tickers[0]}_mean.csv')
+
+    # create dataframe for original data
+    original_df = pd.DataFrame({
+            'open': data_handler.stock_data['Open'],
+            'high': data_handler.stock_data['High'],
+            'low': data_handler.stock_data['Low'],
+            'close': data_handler.stock_data['Close'],
+            'adj': data_handler.stock_data['Adj Close'],
+            'vol': data_handler.stock_data['Volume']
+        }, index=data_handler.stock_data.index)
+
+    print("Original DataFrame:")
+    print(original_df)
+
+    original_df.to_csv(f'{tickers[0]}_original.csv')

@@ -2,8 +2,6 @@ import sys
 import pandas as pd
 import datetime as dt
 from Components.Predictors.lstm_predictor import LSTMPredictor
-from Components.Predictors.gru_predictor import GRUPredictor
-from Components.Models.prophet_model import ProphetModel
 from Components.stock_visualizer import StockVisualizer
 from Components.Data.data_handler import DataHandler
 
@@ -26,7 +24,7 @@ if __name__ == "__main__":
     # Create LSTMPredictor instance
     lstm_predictor = LSTMPredictor(tickers, start, end)
     true_values, predictions, mse_scores, mae_scores, r2_scores = lstm_predictor.train_and_evaluate(n_splits=n_splits)
-
+    print("here\n\n\n\n\n\n\n\n\n\n")
     # Optimize the LSTM model
     lstm_predictor.optimize_model_with_tuner((lstm_predictor.data.X, lstm_predictor.data.y), lstm_predictor.test_data, n_trials=100)
     lstm_future_predictions = lstm_predictor.predict_future(days_to_predict=days_to_predict)

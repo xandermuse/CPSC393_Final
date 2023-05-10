@@ -21,10 +21,21 @@ class DataHandler:
         return self.scaler.inverse_transform(data)
 
     def create_sequences(self, data, sequence_length):
-        n_sequences = len(data) // sequence_length
+        '''n_sequences = len(data) // sequence_length
         n_data_points = n_sequences * sequence_length
         inputs = data.iloc[:n_data_points - sequence_length].values.reshape(-1, sequence_length, data.shape[1])
         outputs = data.iloc[sequence_length: n_data_points].values
+
+        return inputs, outputs'''
+        inputs = []
+        outputs = []
+
+        for i in range(sequence_length, len(data)):
+            inputs.append(data.iloc[i - sequence_length:i].values)
+            outputs.append(data.iloc[i].values)
+
+        inputs = np.array(inputs)
+        outputs = np.array(outputs)
 
         return inputs, outputs
 

@@ -104,7 +104,7 @@ class LSTMPredictor:
                 units=hp.Int("units", 10, 200),
                 num_layers=hp.Int("num_layers", 1, 5),
                 dropout_rate=hp.Float("dropout_rate", 0.0, 0.9),
-                learning_rate=hp.Float("learning_rate", 0.0001, 0.01, log=True),
+                learning_rate=hp.Float("learning_rate", 0.0001, 0.01, sampling="log"),
                 optimizer=hp.Choice("optimizer", ["adam", "rmsprop"]),
             )
             return model.model
@@ -119,6 +119,12 @@ class LSTMPredictor:
         )
 
         early_stopping = EarlyStopping(monitor="val_loss", patience=20, restore_best_weights=True)
+
+        # Print shapes of the data
+        print("X_train shape:", X_train.shape)
+        print("y_train shape:", y_train.shape)
+        print("X_test shape:", X_test.shape)
+        print("y_test shape:", y_test.shape)
 
         tuner.search(
             X_train,

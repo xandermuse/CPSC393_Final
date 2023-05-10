@@ -11,7 +11,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 tickers = ["TSLA"]
-start = dt.datetime(2020, 1, 1)
+start = dt.datetime(2021, 1, 1)
 end = dt.datetime(2023, 5, 9)
 n_splits = 2  # no larger than 6
 days_to_predict = 7
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     print("Predictions DataFrame:")
     print(predictions_df)
 
-    # create a close price dataframe include mean column
+    
     close_df = pd.DataFrame({
         'lstm_close': lstm_close, 'gru_close': gru_close, 'prophet_close': prophet_close,
         'mean_close': predictions_df['mean_close']
